@@ -6,13 +6,14 @@ from tkinter import simpledialog as sd
 
 
 HOST = '127.0.0.1'
-PORT = 12897
+PORT = 12900
 
 # create ssl context and wrap the client socket 
 ssl_context = ssl.create_default_context()
     #if using self signed certificates, disable verification(only for testing)
-    #ssl_context.check_hostname = false
-    #ssl_context.verify_mode = ssl.CERT_NONE
+    # 
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
 
 
 # setting up the client
@@ -104,7 +105,6 @@ send_button.pack()
 
 # Start with a username prompt
 ask_username()
-
 # Run the tkinter event loop 
 root.mainloop()
 
