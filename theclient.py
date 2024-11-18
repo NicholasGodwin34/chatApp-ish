@@ -1,6 +1,7 @@
 import socket as sc
 import threading as tr 
 import tkinter as tk 
+from tkinter import simpledialog as sd
 
 
 HOST = '127.0.0.1'
@@ -29,28 +30,70 @@ def receive_msg():
 def send_msg(event=None): 
     msg=msg_entry.get()
     if msg: 
+        #prefix the message with the username 
+        full_msg = f"{username}: {msg}"
         c_socket.send(msg.encode('utf-8')) # send to server
+        # display the message with the username
         chat_box.config(state='normal')
-        chat_box.insert(tk.END, "You: " + msg + '\n') # display  in chat box 
+        chat_box.insert(tk.END, full_msg   + '\n') # Add username
         chat_box.config(state='disabled')
         chat_box.see(tk.END)
         msg_entry.delete(0, tk.END) # clear the input field 
+
+#Function to prompt for username using GUI 
+def ask_username(): 
+    global username 
+    user_prompt = tk.Toplevel(root) # create a popup window
+    user_prompt.title("Enter Your username")
+
+    tk.Label(user_prompt, text="Please enter your username: ").pack(pady=10)
+    user_entry=tk.Entry(user_prompt)
+    user_entry.pack(pady=10)
+
+    def submit_username(): 
+        nonlocal user_entry
+        username = user_entry.get()
+        if username: 
+            user_prompt.destroy() # close the popup 
+            start_chat(username) # start the chat application
+        else : 
+            tk.Label(user_prompt, text="Username cannot be empty! ", fg="red").pack()
+
+    tk.Button(user_prompt, text="submit", command=submit_username).pack(pady=10)
+    user_prompt.protocol("WM_DELETE_WINDOW", root.destroy)  # close app if user exits popup
+
+
+# function to initialize the chat after username is set 
+def start_chat(user): 
+    global username 
+    username=user # save the username globally 
+
+    #create chat interface 
+    chat_box.pack()
+    msg_entry.pack()
+    send_button.pack()
+    
+    # start thread to receive messages
+    tr.Thread(target=receive_msg, daemon=True ).start()
+    # Bind the "Enter" key to send messages
+    root.bind("<Return>", send_msg)
+
 
 # Create the GUI 
 root = tk.Tk()
 root.title("Chat Application")
 
-chat_box = tk.Text(root, height=20, width=50)
+chat_box = tk.Text(root, height=20, width=50, state='disabled') # chat display
 chat_box.pack()
 
-msg_entry = tk.Entry(root, width=50)
+msg_entry = tk.Entry(root, width=50) # input field
 msg_entry.pack()
 
-send_button = tk.Button(root, text="send", command=send_msg)
+send_button = tk.Button(root, text="send", command=send_msg) # send button
 send_button.pack()
 
-#start thread to receive messages 
-root.bind("<Return>", send_msg)
+# Start with a username prompt
+ask_username()
 
 # Run the tkinter event loop 
 root.mainloop()
