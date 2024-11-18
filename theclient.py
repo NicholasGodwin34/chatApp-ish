@@ -1,13 +1,23 @@
 import socket as sc
 import threading as tr 
 import tkinter as tk 
+import ssl 
 from tkinter import simpledialog as sd
 
 
 HOST = '127.0.0.1'
 PORT = 12897
+
+# create ssl context and wrap the client socket 
+ssl_context = ssl.create_default_context()
+    #if using self signed certificates, disable verification(only for testing)
+    #ssl_context.check_hostname = false
+    #ssl_context.verify_mode = ssl.CERT_NONE
+
+
 # setting up the client
-c_socket = sc.socket(sc.AF_INET, sc.SOCK_STREAM)
+raw_socket = sc.socket(sc.AF_INET, sc.SOCK_STREAM)
+c_socket = ssl_context.wrap_socket(raw_socket, server_hostname=HOST)
 c_socket.connect((HOST , PORT))
 
 
